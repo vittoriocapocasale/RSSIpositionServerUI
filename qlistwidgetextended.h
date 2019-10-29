@@ -1,12 +1,16 @@
 #ifndef QLISTWIDGETEXTENDED_H
 #define QLISTWIDGETEXTENDED_H
 
-#include <QWidget>
+#include <QListWidget>
 
-class QlistWidgetExtended : public QListWidget
+class QListWidgetExtended : public QListWidget
 {
+    Q_OBJECT
 public:
-    QlistWidgetExtended();
+    QListWidgetExtended();
+    QListWidgetExtended(QWidget* &);
+public slots:
+    void currentPositionClickedHandler(QVector<QString> data);
 };
 
 #endif // QLISTWIDGETEXTENDED_H

@@ -2,16 +2,24 @@
 #define REQUESTHANDLER_H
 
 #include <QObject>
-
-class RequestHandler : public QObject
+#include <QRunnable>
+#include <QBuffer>
+#include <memory>
+#include <functions.h>
+#include <QThreadPool>
+class RequestHandler : public QObject, public QRunnable
 {
     Q_OBJECT
 public:
-    explicit RequestHandler(QObject *parent = nullptr);
-
+    RequestHandler(QBuffer* s);
 signals:
-
-public slots:
+    void success(bool outcome);
+    void bufferReady (QByteArray b);
+    void packetsParsed(qulonglong time);
+protected:
+    void run();
+private:
+    QBuffer* socket;
 };
 
 #endif // REQUESTHANDLER_H

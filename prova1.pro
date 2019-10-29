@@ -4,9 +4,9 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui charts sql
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport network
 
 TARGET = prova1
 TEMPLATE = app
@@ -25,11 +25,48 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        chart.cpp \
+        currentpositionshower.cpp \
+        custompoint.cpp \
+        dbwriter.cpp \
+        espserver.cpp \
+        functions.cpp \
+        globalstate.cpp \
+        historyshower.cpp \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+        movementsshower.cpp \
+        packet.cpp \
+        qcustomplot.cpp \
+        qdb.cpp \
+        qlistwidgetextended.cpp \
+        requesthandler.cpp \
+        sldb.cpp \
+        stallingstation.cpp \
+        tcpconnection.cpp \
+        threadguard.cpp
 
 HEADERS += \
-        mainwindow.h
+        chart.h \
+        circularbuffer.h \
+        currentpositionshower.h \
+        custompoint.h \
+        dbwriter.h \
+        espserver.h \
+        functions.h \
+        globalstate.h \
+        historyshower.h \
+        mainwindow.h \
+        movementsshower.h \
+        packet.h \
+        qcustomplot.h \
+        qdb.h \
+        qlistwidgetextended.h \
+        requesthandler.h \
+        sldb.h \
+        stallingstation.h \
+        tcpconnection.h \
+        threadguard.h
 
 FORMS += \
         mainwindow.ui
@@ -38,3 +75,11 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+DISTFILES += \
+    config.txt \
+    sqlDb \
+    sqlDb2
+
+RESOURCES += \
+    resources.qrc

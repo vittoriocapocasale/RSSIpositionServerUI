@@ -1,0 +1,15 @@
+#port
+4567
+#channel
+6
+#A value (RSSI at one meter)
+52
+#N value (mitigation factor)
+2.2
+#chart axis length(m) (from distance to system coordinates)
+10
+#stations (MAC, X, Y)
+30AEA43C540C,0.04,-0.02
+3C71BF797C48,-0.04,0.02
+3C71BF7987C0,+0.04,+0.02
+A4CF12575938,-0.04,-0.02
