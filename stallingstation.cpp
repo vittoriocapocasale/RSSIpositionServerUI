@@ -6,19 +6,23 @@ StallingStation::StallingStation()
 }
 void StallingStation::addPacket(Packet pkt, timeTimePoint t)
 {
-    auto it=this->newPackets.find(pkt.hash);
-    if(it!=this->newPackets.end())
+    auto it=this->devices.find(pkt.cellId);
+    if(it!=this->devices.end())
     {
-        it->mergeDevices(pkt);
-        //qDebug()<<"pkts"<<it->second.devices.size();
+        it->addStation(pkt.station, pkt.intensity);
     }
     else
     {
-        pkt.time=t;
-        pkt.x=-2;
-        pkt.y=-2;
-        this->newPackets.insert(pkt.hash, pkt);
+        Device d;
+        d.x=-2;
+        d.y=-2;
+        d.addStation(pkt.station,pkt.intensity);
+        d.fake=pkt.fake;
+        d.time=t;
+        d.devId=pkt.cellId;
+        this->devices.insert(pkt.cellId, d);
     }
+
 }
 
 void StallingStation::addPackets(std::vector<Packet> pkts, timeTimePoint t)
@@ -35,7 +39,7 @@ void StallingStation::dataHandle(qulonglong time)
 
     //qDebug()<<"called";
     try {
-        DBWriter *rh = new DBWriter(this->newPackets, this->fakes, time);
+        DBWriter *rh = new DBWriter(this->devices, this->fakes, time);
         connect(rh, &DBWriter::databaseUpdated, this, &StallingStation::databaseUpdated);
         QThreadPool::globalInstance()->start(rh);
     }

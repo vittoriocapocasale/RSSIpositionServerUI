@@ -53,12 +53,13 @@ void RequestHandler::run()
                         // qDebug()<<"EEE";
                         intensity=*reinterpret_cast<int8_t*>(s->read(1).data());
                         //qDebug()<<"Intensity "<<intensity<<p.cellId;
-                        p.addDevice(station, intensity);
+                        p.station=station;
+                        p.intensity=intensity;
                         // p.time=
                         ntohl(*(reinterpret_cast<uint8_t*>(s->read(4).data())));
                         uint8_t l=*reinterpret_cast<uint8_t*>(s->read(1).data());
                         p.ssid=s->read(l);
-                        p.iteration=iteration;
+                        //p.iteration=iteration;
                         packets.push_back(std::move(p));
 
                     }

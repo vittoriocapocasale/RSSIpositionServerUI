@@ -79,17 +79,16 @@ void Chart::handleTimeout(qulonglong time)
     std::tuple<qulonglong, qulonglong, qulonglong> counts=QDB::getInstance().selectCounts(time);
     qulonglong totalCount=std::get<0>(counts);
     qulonglong fakeCount=std::get<1>(counts);
-    qulonglong normalCount=std::get<2>(counts);
+    //qulonglong normalCount=std::get<2>(counts);
     double precision=0;
-    qulonglong fakeRecognized=totalCount-fakeCount-normalCount;
-    qulonglong den=fakeRecognized+fakeCount;
-    if(den>0)
+    //qulonglong fakeRecognized=totalCount-fakeCount-normalCount;
+    if(totalCount>0)
     {
-        precision= 100*fakeCount/den;
+        precision= 100*fakeCount/totalCount;
     }
     //qDebug()<<"den"<<den;
     //qDebug()<<"precision"<<precision;
-    m_y=normalCount;
+    m_y=totalCount;
     l_y = precision;
     this->cb.add(m_y);
     double maxYvalue=this->cb.getMax();

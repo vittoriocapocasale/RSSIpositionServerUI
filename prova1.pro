@@ -29,6 +29,7 @@ SOURCES += \
         currentpositionshower.cpp \
         custompoint.cpp \
         dbwriter.cpp \
+        device.cpp \
         espserver.cpp \
         functions.cpp \
         globalstate.cpp \
@@ -52,6 +53,7 @@ HEADERS += \
         currentpositionshower.h \
         custompoint.h \
         dbwriter.h \
+        device.h \
         espserver.h \
         functions.h \
         globalstate.h \

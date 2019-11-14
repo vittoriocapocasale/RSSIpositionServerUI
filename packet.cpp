@@ -3,6 +3,7 @@ Packet::Packet () {}
 
 Packet::Packet(quint64 hash, timepoint time, QString ssid, quint64 cellId):
     hash(hash), time(time), ssid(ssid), cellId(cellId){}
+/*
 void Packet::addDevice(qulonglong name, int8_t intensty)
 {
     if( this->devices.find(name)!=this->devices.end())
@@ -22,3 +23,4 @@ void Packet::mergeDevices(Packet& p)
         }
     }
 }
+*/

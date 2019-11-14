@@ -10,6 +10,7 @@
 #include <qdb.h>
 #include <unordered_set>
 #include <chrono>
+#include <device.h>
 #include <dbwriter.h>
 class StallingStation:public QObject
 {
@@ -33,7 +34,7 @@ private:
     StallingStation();
     void addPacket(Packet pkt, timeTimePoint t);
     std::pair<double, double> intersectionFinder(double x1, double b_y1, double r1, double x2, double y2,double r2, double x3, double y3, double r3);
-    QMap<uint64_t, Packet> newPackets;
+    QMap<uint64_t, Device> devices;
     QMap<uint64_t, timeTimePoint> fakes;
 
 

@@ -1,46 +1,48 @@
 #include "dbwriter.h"
 
-DBWriter::DBWriter(QMap<uint64_t, Packet>& newPkts, QMap<uint64_t, timeTimePoint>& fakeAddresses, qulonglong time):
-    newPackets(newPkts), fakes(fakeAddresses)
+DBWriter::DBWriter(QMap<uint64_t, Device>& newDevices, QMap<uint64_t, timeTimePoint>& fakeAddresses, qulonglong time):
+    devices(newDevices), fakes(fakeAddresses)
 {
     std::chrono::duration<qulonglong> dur(time);
     timeTimePoint t(dur);
     this->time=t;
 }
-
 void DBWriter::run()
 {
 
     try {
-        QHash<uint64_t, Packet> dbPackets;
         std::vector<unsigned int> seq;
         auto scale= GlobalState::getInstance().getScale();
         int8_t coefficientA=GlobalState::getInstance().getCoefficientA();
         double coefficientN= GlobalState::getInstance().getCoefficientN();
+        //qDebug()<<"entering"<<devices.size();
         std::lock_guard<std::mutex> lg(GlobalState::getInstance().packetsMutex);
-        for (auto i=this->newPackets.begin(); i!=this->newPackets.end();)
+        for (auto i=this->devices.begin(); i!=this->devices.end();)
         {
+            //qDebug()<<"in"<<i->stations.size();
             double x=-2;
             double y=-2;
-            if (i->devices.size()>=3)
+            if (i->stations.size()>=3)
             {
                 std::vector<double> intensities;
                 std::vector<double> xValues;
                 std::vector<double> yValues;
-                for (auto j=i->devices.begin(); j!= i->devices.end() && intensities.size()<3;j++)
+                for (auto j=i->stations.begin(); j!= i->stations.end();j++)
                 {
 
                     xValues.push_back(GlobalState::getInstance().getStations().find(j->first)->first);
                     yValues.push_back(GlobalState::getInstance().getStations().find(j->first)->second);
-                    intensities.push_back(pow(10,((coefficientA-j->second)/(10*coefficientN)))/scale);
+                    double average = std::accumulate( j->second.begin(), j->second.end(), 0.0)/j->second.size();
+                    intensities.push_back(pow(10,((coefficientA-average)/(10*coefficientN)))/scale);
                 }
                 qDebug()<<xValues[0]<< yValues[0]<< intensities[0];
                 qDebug()<<xValues[1]<< yValues[1]<< intensities[1];
                 qDebug()<<xValues[2]<< yValues[2]<< intensities[2];
                 //qDebug()<<i->devices;
-                auto coordinates= intersectionFinder(xValues[0], yValues[0], intensities[0],
+                /*auto coordinates= intersectionFinder(xValues[0], yValues[0], intensities[0],
                                                      xValues[1], yValues[1], intensities[1],
-                                                     xValues[2], yValues[2], intensities[2]);
+                                                     xValues[2], yValues[2], intensities[2]);*/
+                auto coordinates=minMax(xValues, yValues, intensities);
                 x=coordinates.first;
                 y=coordinates.second;
                 qDebug()<<"XY"<<x<<y;
@@ -61,36 +63,31 @@ void DBWriter::run()
             }
             else
             {
-                i=newPackets.erase(i);
+                i=devices.erase(i);
             }
         }
-        for(auto i=this->newPackets.begin();i!=this->newPackets.end(); i++)
+        for(auto i=this->devices.begin();i!=this->devices.end(); i++)
         {
-            auto j= fakes.find(i->hash);
+            auto j= fakes.find(i->devId);
             if(j!= fakes.end()&&i->fakeness==2)
             {
                 i->fakeness=1;
             }
             if(i->fakeness==2)
             {
-                for (auto j=this->newPackets.begin(); j!=this->newPackets.end();j++)
+                for (auto j=this->devices.begin(); j!=this->devices.end();j++)
                 {
-                    if(j->fakeness!=2&&j!=i&&(((j->x-i->x)*(j->x-i->x)+(j->y-i->y)*(j->y-i->y))<0.001||j->hash==i->hash))
+                    if(j->fakeness!=2&&(((j->x-i->x)*(j->x-i->x)+(j->y-i->y)*(j->y-i->y))<0.001))
                     {
                         i->fakeness=1;
-                        this->fakes.insert(i->hash, i->time);
+                        this->fakes.insert(i->devId, i->time);
                     }
                 }
             }
-            auto p=dbPackets.find(i->cellId);
-            {
-                if(p==dbPackets.end()||p->fakeness>i->fakeness)
-                {
-                    dbPackets.insert(i->cellId,*i);
-                }
-            }
         }
-        this->newPackets.clear();
+        QList<Device> pks= devices.values();
+        QDB::getInstance().multipleInsert(pks);
+        this->devices.clear();
         for(auto it=fakes.begin(); it!= fakes.end();)
         {
             qulonglong elapsedTime = std::chrono::duration<qulonglong, std::ratio<1>>(time-*it).count();
@@ -102,8 +99,6 @@ void DBWriter::run()
                 it++;
             }
         }
-        QList<Packet> pks= dbPackets.values();
-        QDB::getInstance().multipleInsert(pks);
         emit databaseUpdated(time.time_since_epoch().count());
     }
     catch (...)
@@ -161,4 +156,21 @@ std::pair<double, double> DBWriter::intersectionFinder(double x1, double b_y1, d
 
     }
     return std::make_pair(-3,-3);
+}
+
+
+std::pair<double,double> DBWriter::minMax(std::vector<double>& x, std::vector<double>& y, std::vector<double>& r){
+    QVector<double> xsum;
+    QVector<double> xdiff;
+    QVector<double> ysum;
+    QVector<double> ydiff;
+    for(unsigned int i=0; i<r.size(); i++){
+        xsum.push_back(x[i]+r[i]);
+        xdiff.push_back(x[i]-r[i]);
+        ysum.push_back(y[i]+r[i]);
+        ydiff.push_back(y[i]-r[i]);
+    }
+    double xvalue=(*std::min_element(xsum.constBegin(), xsum.constEnd())+*std::max_element(xdiff.constBegin(), xdiff.constEnd()))/2;
+    double yvalue=(*std::min_element(ysum.constBegin(), ysum.constEnd())+*std::max_element(ydiff.constBegin(), ydiff.constEnd()))/2;
+    return std::make_pair(xvalue, yvalue);
 }

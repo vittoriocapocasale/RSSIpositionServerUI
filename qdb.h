@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <sldb.h>
-#include <packet.h>
+#include <device.h>
 class QDB
 {
 public:
@@ -19,7 +19,7 @@ public:
     //tabella autoincrement payload hash time x, y devid, fakeness
     SLDB& getDB();
     void insert(quint64 hash, quint64 time, double x, double y, qulonglong devid, int fakeness, qulonglong sequence, qulonglong iteration);
-    void multipleInsert(QList<Packet> & packets);
+    void multipleInsert(QList<Device> & devices);
     qulonglong selectSequenceFromId(qulonglong devid);
     qulonglong selectCount(qulonglong time);
     std::tuple<qulonglong, qulonglong, qulonglong> selectCounts(qulonglong time);

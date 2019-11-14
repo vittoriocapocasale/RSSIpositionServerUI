@@ -197,9 +197,8 @@ std::shared_ptr<std::vector<std::tuple< qulonglong, qulonglong>>>QDB::selectMost
     return ret;
 }
 
-void QDB::multipleInsert(QList<Packet> & packets){
+void QDB::multipleInsert(QList<Device> & devices){
     this->db.get().transaction();
-
     try
     {
         qulonglong sequence;
@@ -209,9 +208,9 @@ void QDB::multipleInsert(QList<Packet> & packets){
         q.prepare(this->insertQueryString);
         s.setForwardOnly(true);
         s.prepare(this->selectSequenceFromIdQueryString);
-        for(auto it=packets.begin(); it!=packets.end(); it++){
+        for(auto it=devices.begin(); it!=devices.end(); it++){
             sequence=0;
-            s.addBindValue(it->cellId);
+            s.addBindValue(it->devId);
             if (!s.exec())
             {
                 throw std::exception();
@@ -221,14 +220,14 @@ void QDB::multipleInsert(QList<Packet> & packets){
                 sequence=s.value(0).toULongLong();
             }
             long timeFE=std::chrono::time_point_cast<std::chrono::seconds>(it->time).time_since_epoch().count();
-            q.addBindValue(it->hash);
+            q.addBindValue(it->devId);
             q.addBindValue(static_cast<qulonglong>(timeFE));
             q.addBindValue(it->x);
             q.addBindValue(it->y);
-            q.addBindValue(it->cellId);
+            q.addBindValue(it->devId);
             q.addBindValue(it->fakeness);
             q.addBindValue(sequence+1);
-            q.addBindValue(it->iteration);
+            q.addBindValue(0);
             if(!q.exec())
             {
                 throw std::exception();
